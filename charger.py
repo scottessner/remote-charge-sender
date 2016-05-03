@@ -56,14 +56,16 @@ mop[12] = "External-discharging"
  
 ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
  
-ser.open()
+# ser.open()
 ser.isOpen()
  
 # MAIN #############################################################
  
 while 1:
  
-    line = ser.readline()
+    line = ser.readline().decode('UTF-8')
+
+    print(line)
 
     if len(line) > 0:
 
@@ -77,13 +79,13 @@ while 1:
         status['charge_current'] = int(raw[5])*10
         status['cell_voltages'] = list()
 
-        for cell in range(6, length-3):
+        for cell in range(6, length-5):
             if raw[cell] != '0':
-                status['cell_voltages']['cell_{0}_voltage'.format(cell)] = float(raw[cell])/1000
+                status['cell_voltages'].insert(cell-6,float(raw[cell])/1000)
 
-        status['internal_temp'] = float(raw[length-2])/10
-        status['external_temp'] = float(raw[length-1])/10
-        status['total_charge'] = int(raw[length])
+        status['internal_temp'] = float(raw[length-4])/10
+        status['external_temp'] = float(raw[length-3])/10
+        status['total_charge'] = int(raw[length-2])
 
         message = json.dumps(status)
         channel.basic_publish(exchange='amq.fanout',
