@@ -18,9 +18,17 @@
 #
 ########################################################################
  
-import os, sys
+import os
+import sys
 import time
 import serial
+import json
+import pika
+
+connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.40.10'))
+channel = connection.channel()
+
+channel.queue_declare(queue='batt')
  
 # discharge end voltage (empty)
  
@@ -76,6 +84,12 @@ while 1:
         status['internal_temp'] = float(raw[length-2])/10
         status['external_temp'] = float(raw[length-1])/10
         status['total_charge'] = int(raw[length])
+
+        message = json.dumps(status)
+        channel.basic_publish(exchange='amq.fanout',
+                              routing_key='battery',
+                              body=message
+                              )
 
     else:
         print('timeout')
