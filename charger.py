@@ -55,43 +55,48 @@ mop[12] = "External-discharging"
 # change according to the ttyUSB assigned to the iCharger (dmesg)
  
 ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
- 
-# ser.open()
-ser.isOpen()
- 
-# MAIN #############################################################
- 
 while 1:
- 
-    line = ser.readline().decode('UTF-8')
+    try:
 
-    print(line)
+        while 1:
 
-    if len(line) > 0:
+            # ser.open()
+            ser.isOpen()
 
-        raw = line.split(';')
-        length = len(raw)
+            # MAIN #############################################################
+            line = ser.readline().decode('UTF-8')
 
-        status = dict();
-        status['mode'] = mop[int(raw[1])]
-        status['input_voltage'] = float(raw[3])/1000
-        status['battery_voltage'] = float(raw[4])/1000
-        status['charge_current'] = int(raw[5])*10
-        status['cell_voltages'] = list()
+            print(line)
 
-        for cell in range(6, length-5):
-            if raw[cell] != '0':
-                status['cell_voltages'].insert(cell-6,float(raw[cell])/1000)
+            if len(line) > 0:
 
-        status['internal_temp'] = float(raw[length-4])/10
-        status['external_temp'] = float(raw[length-3])/10
-        status['total_charge'] = int(raw[length-2])
+                raw = line.split(';')
+                length = len(raw)
 
-        message = json.dumps(status)
-        channel.basic_publish(exchange='amq.fanout',
-                              routing_key='battery',
-                              body=message
-                              )
+                status = dict();
+                status['mode'] = mop[int(raw[1])]
+                status['input_voltage'] = float(raw[3])/1000
+                status['battery_voltage'] = float(raw[4])/1000
+                status['charge_current'] = int(raw[5])*10
+                status['cell_voltages'] = list()
 
-    else:
-        print('timeout')
+                for cell in range(6, length-5):
+                    if raw[cell] != '0':
+                        status['cell_voltages'].insert(cell-6,float(raw[cell])/1000)
+
+                status['internal_temp'] = float(raw[length-4])/10
+                status['external_temp'] = float(raw[length-3])/10
+                status['total_charge'] = int(raw[length-2])
+
+                message = json.dumps(status)
+                channel.basic_publish(exchange='amq.fanout',
+                                      routing_key='battery',
+                                      body=message
+                                      )
+
+            else:
+                print('timeout')
+
+    except serial.SerialException as ex:
+
+        print(ex.text)
