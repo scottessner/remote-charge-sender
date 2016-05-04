@@ -54,9 +54,10 @@ mop[12] = "External-discharging"
 # configure the serial connections 
 # change according to the ttyUSB assigned to the iCharger (dmesg)
  
-ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
 while 1:
     try:
+
+        ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
 
         while 1:
 
@@ -99,4 +100,5 @@ while 1:
 
     except serial.SerialException as ex:
 
-        print(ex.text)
+        print('Could not connect to serial port')
+        time.sleep(5)
