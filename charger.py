@@ -84,18 +84,19 @@ while 1:
             length = len(raw)
 
             state['mode'] = mop[int(raw[1])]
-            state['input_voltage'] = float(raw[3]) / 1000
-            state['battery_voltage'] = float(raw[4]) / 1000
-            state['charge_current'] = int(raw[5]) * 10
-            state['cell_voltages'] = list()
+            state['state'] = dict()
+            state['state']['input_voltage'] = float(raw[3]) / 1000
+            state['state']['battery_voltage'] = float(raw[4]) / 1000
+            state['state']['charge_current'] = int(raw[5]) * 10
+            state['state']['cell_voltages'] = list()
 
             for cell in range(6, length-5):
                 if raw[cell] != '0':
-                    state['cell_voltages'].insert(cell - 6, float(raw[cell]) / 1000)
+                    state['state']['cell_voltages'].insert(cell - 6, float(raw[cell]) / 1000)
 
-            state['internal_temp'] = float(raw[length - 4]) / 10
-            state['external_temp'] = float(raw[length - 3]) / 10
-            state['total_charge'] = int(raw[length - 2])
+            state['state']['internal_temp'] = float(raw[length - 4]) / 10
+            state['state']['external_temp'] = float(raw[length - 3]) / 10
+            state['state']['total_charge'] = int(raw[length - 2])
 
             # message = json.dumps(state)
             #channel.basic_publish(exchange='amq.fanout',
