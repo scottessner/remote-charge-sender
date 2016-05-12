@@ -25,6 +25,12 @@ import serial
 import json
 import pika
 
+charger_status = [None]*4
+
+charger_status[0] = 'No Charger Connected'
+charger_status[1] = 'Charger Idle'
+charger_status[2] = 'Charger Active'
+
 connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.40.10'))
 channel = connection.channel()
 
@@ -55,50 +61,57 @@ mop[12] = "External-discharging"
 # change according to the ttyUSB assigned to the iCharger (dmesg)
  
 while 1:
+
+    state = dict()
+
     try:
 
         ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
 
-        while 1:
+        # ser.open()
+        ser.isOpen()
 
-            # ser.open()
-            ser.isOpen()
+        # MAIN #############################################################
+        line = ser.readline().decode('UTF-8')
 
-            # MAIN #############################################################
-            line = ser.readline().decode('UTF-8')
+        print(line)
 
-            print(line)
+        if len(line) > 0:
 
-            if len(line) > 0:
+            raw = line.split(';')
+            length = len(raw)
 
-                raw = line.split(';')
-                length = len(raw)
+            state['status'] = 'Charger Active'
+            state['mode'] = mop[int(raw[1])]
+            state['input_voltage'] = float(raw[3]) / 1000
+            state['battery_voltage'] = float(raw[4]) / 1000
+            state['charge_current'] = int(raw[5]) * 10
+            state['cell_voltages'] = list()
 
-                status = dict();
-                status['mode'] = mop[int(raw[1])]
-                status['input_voltage'] = float(raw[3])/1000
-                status['battery_voltage'] = float(raw[4])/1000
-                status['charge_current'] = int(raw[5])*10
-                status['cell_voltages'] = list()
+            for cell in range(6, length-5):
+                if raw[cell] != '0':
+                    state['cell_voltages'].insert(cell - 6, float(raw[cell]) / 1000)
 
-                for cell in range(6, length-5):
-                    if raw[cell] != '0':
-                        status['cell_voltages'].insert(cell-6,float(raw[cell])/1000)
+            state['internal_temp'] = float(raw[length - 4]) / 10
+            state['external_temp'] = float(raw[length - 3]) / 10
+            state['total_charge'] = int(raw[length - 2])
 
-                status['internal_temp'] = float(raw[length-4])/10
-                status['external_temp'] = float(raw[length-3])/10
-                status['total_charge'] = int(raw[length-2])
+            # message = json.dumps(state)
+            #channel.basic_publish(exchange='amq.fanout',
+            #                      routing_key='battery',
+            #                      body=message
+            #                      )
 
-                message = json.dumps(status)
-                channel.basic_publish(exchange='amq.fanout',
-                                      routing_key='battery',
-                                      body=message
-                                      )
-
-            else:
-                print('timeout')
+        else:
+            state['status'] = 'Charger Idle'
 
     except serial.SerialException as ex:
 
-        print('Could not connect to serial port')
+        state['status'] = 'No Charger Connected'
         time.sleep(5)
+
+    message = json.dumps(state)
+    channel.basic_publish(exchange='amq.fanout',
+                          routing_key='battery',
+                          body=message
+                          )
