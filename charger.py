@@ -24,8 +24,6 @@ import time
 import serial
 import json
 import pika
-import usb.core
-import usb.util
 
 charger_status = [None]*4
 
@@ -70,16 +68,7 @@ while 1:
 
     try:
 
-        dev = usb.core.find(find_all=True)
-
-        for cfg in dev:
-            print('Device: {0}:{1}, Serial: {2}, Path: {3}'
-                  .format(hex(cfg.idVendor),
-                          hex(cfg.idProduct),
-                          cfg.iSerialNumber,
-                          cfg.filename))
-
-        ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
+        ser = serial.Serial('/dev/charger', baudrate=230400, timeout=5)
 
         # ser.open()
         ser.isOpen()
