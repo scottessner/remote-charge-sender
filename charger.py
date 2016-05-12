@@ -73,10 +73,11 @@ while 1:
         dev = usb.core.find(find_all=True)
 
         for cfg in dev:
-            print('Vendor: {0}, Product: {1}, Serial: {2}'
+            print('Device: {0}:{1}, Serial: {2}, Path: {3}'
                   .format(hex(cfg.idVendor),
                           hex(cfg.idProduct),
-                          cfg.iSerialNumber))
+                          cfg.iSerialNumber,
+                          cfg.filename))
 
         ser = serial.Serial('/dev/ttyUSB0', baudrate=230400, timeout=5)
 
