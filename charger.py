@@ -76,8 +76,6 @@ while 1:
         # MAIN #############################################################
         line = ser.readline().decode('UTF-8')
 
-        print(line)
-
         if len(line) > 0:
 
             raw = line.split(';')
