@@ -31,7 +31,7 @@ charger_status[0] = 'No Charger Connected'
 charger_status[1] = 'Charger Idle'
 charger_status[2] = 'Charger Active'
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.40.10'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1'))
 channel = connection.channel()
 
 channel.queue_declare(queue='batt')
