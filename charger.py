@@ -42,7 +42,7 @@ dchg_end = 3.2
  
  
 # iCharger modes of operation
-mop = [None]*13
+mop = [None]*15
  
 mop[1] = "Charging"
 mop[2] = "Discharging"
@@ -56,6 +56,8 @@ mop[9] = "NIxx trickle"
 mop[10] = "Foam cut"
 mop[11] = "Info"
 mop[12] = "External-discharging"
+mop[13] = "Not Connected"
+mop[14] = "Idle"
  
 # configure the serial connections 
 # change according to the ttyUSB assigned to the iCharger (dmesg)
@@ -81,7 +83,6 @@ while 1:
             raw = line.split(';')
             length = len(raw)
 
-            state['status'] = 'Charger Active'
             state['mode'] = mop[int(raw[1])]
             state['input_voltage'] = float(raw[3]) / 1000
             state['battery_voltage'] = float(raw[4]) / 1000
@@ -103,11 +104,11 @@ while 1:
             #                      )
 
         else:
-            state['status'] = 'Charger Idle'
+            state['mode'] = mop[14]
 
     except serial.SerialException as ex:
 
-        state['status'] = 'No Charger Connected'
+        state['mode'] = mop[13]
         time.sleep(5)
 
     message = json.dumps(state)
