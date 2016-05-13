@@ -1,7 +1,7 @@
 
 import pika
-
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.40.10'))
+creds = pika.PlainCredentials('charger', 'charger')
+connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.40.117', credentials=creds))
 channel = connection.channel()
 
 # channel.exchange_declare(exchange='amq.fanout',
