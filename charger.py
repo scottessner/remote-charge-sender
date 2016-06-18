@@ -32,7 +32,8 @@ charger_status[1] = 'Charger Idle'
 charger_status[2] = 'Charger Active'
 
 creds = pika.PlainCredentials('charger', 'charger')
-connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1', credentials=creds))
+connection = pika.BlockingConnection(pika.ConnectionParameters('ssessner.com', credentials=creds))
+
 channel = connection.channel()
 
 channel.queue_declare(queue='batt')

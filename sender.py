@@ -1,6 +1,6 @@
 import pika
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.40.10'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('ssessner.com'))
 channel = connection.channel()
 
 channel.queue_declare(queue='batt')
